@@ -18,4 +18,4 @@
     command : sudo systemctl start docker
 
   - name: Deploy Docker Container
-    command:  docker run -itd -p 8080:8081 pratap1371/insure:1.0
+    command:  docker run -itd -p 8080:8081 chandruka/insureme:1.0
