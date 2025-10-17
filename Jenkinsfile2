@@ -4,12 +4,14 @@ pipeline {
     stages {
         stage('CheckOut') {
             steps {
+                echo 'Checkout the source code from GitHub'
                 git branch: 'main', url: 'https://github.com/chandrukandagallu/InsureMe-20Mar.git'
             }
         }
 
         stage('Package the Application') {
             steps {
+                echo "Packaging the Application"
                 sh 'mvn clean package'
             }
         }
@@ -22,8 +24,8 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockercreds', usernameVariable: 'dockerlogin', passwordVariable: 'dockerpassword')]) {
-                    sh 'docker login -u ${dockerlogin} -p ${dockerpassword}'
+                withCredentials([usernamePassword(credentialsId: 'dockercreds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
                 }
             }
         }
