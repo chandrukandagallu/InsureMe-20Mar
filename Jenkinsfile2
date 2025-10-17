@@ -5,7 +5,7 @@ pipeline {
     stage('CheckOut') {
       steps {
         echo 'Checkout the source code from GitHub'
-        git branch: 'main', url: 'https://github.com/Pratap-mulakala/InsureMe-20Mar.git'
+        git branch: 'main', url: 'https://github.com/chandrukandagallu/InsureMe-20Mar.git'
             }
     }
     
@@ -16,24 +16,12 @@ pipeline {
             }
     }
     
-   /* stage('Publish Reports using HTML') {
-      steps {
-      publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: '/var/lib/jenkins/workspace/Insure-Project/target/surefire-reports', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: '', useWrapperFileDirectly: true])
-            }
-    } 
-    
     stage('Docker Image Creation') {
       steps {
-        sh 'docker build -t pratap1371/insure:1.0 .'
+        sh 'docker build -t chandruka/insureme:1.0 .'
             }
     }
-     stage('Docker-Login') {
-           steps {
-              withCredentials([usernamePassword(credentialsId: 'dockercreds', passwordVariable: 'dockerpassword', usernameVariable: 'dockerlogin')]) {
-               sh 'docker login -u ${dockerlogin} -p ${dockerpassword}'
-               // withCredentials([string(credentialsId: 'docker', variable: 'dockervariable')]) {                   
-                        }
-                }
+     
 }
 
     stage('Push Image to DockerHub') {
