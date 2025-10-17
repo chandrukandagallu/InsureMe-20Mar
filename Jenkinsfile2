@@ -1,45 +1,58 @@
 pipeline {
-  agent any
- 
-  stages {
-    stage('CheckOut') {
-      steps {
-        echo 'Checkout the source code from GitHub'
-        git branch: 'main', url: 'https://github.com/chandrukandagallu/InsureMe-20Mar.git'
+    agent any
+
+    stages {
+        // Stage 1: Checkout code from GitHub
+        stage('CheckOut') {
+            steps {
+                echo 'Checkout the source code from GitHub'
+                git branch: 'main', url: 'https://github.com/chandrukandagallu/InsureMe-20Mar.git'
             }
-    }
-    
-    stage('Package the Application') {
-      steps {
-        echo " Packaing the Application"
-        sh 'mvn clean package'
+        }
+
+        // Stage 2: Package the application using Maven
+        stage('Package the Application') {
+            steps {
+                echo 'Packaging the Application'
+                sh 'mvn clean package'
             }
-    }
-    
-    stage('Docker Image Creation') {
-      steps {
-        sh 'docker build -t chandruka/insureme:1.0 .'
+        }
+
+        // Stage 3: Build Docker Image
+        stage('Docker Image Creation') {
+            steps {
+                sh 'docker build -t chandruka/insureme:1.0 .'
             }
+        }
+
+        // Stage 4: Docker Login
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockercreds', passwordVariable: 'dockerpassword', usernameVariable: 'dockerlogin')]) {
+                    sh 'docker login -u ${dockerlogin} -p ${dockerpassword}'
+                }
+            }
+        }
+
+        // Stage 5: Push Docker Image to DockerHub
+        stage('Push Image to DockerHub') {
+            steps {
+                sh 'docker push chandruka/insureme:1.0'
+            }
+        }
+
+        // Stage 6: Deploy Application using Ansible
+        stage('Deploy Application using Ansible') {
+            steps {
+                ansiblePlaybook(
+                    become: true,
+                    credentialsId: 'sshid',
+                    installation: 'ansible',
+                    inventory: '/etc/ansible/hosts',
+                    playbook: 'deploy.yml',
+                    vaultTmpPath: ''
+                )
+            }
+        }
     }
- stage('Docker-Login') {
-           steps {
-              withCredentials([usernamePassword(credentialsId: 'dockercreds', passwordVariable: 'dockerpassword', usernameVariable: 'dockerlogin')]) {
-               sh 'docker login -u ${dockerlogin} -p ${dockerpassword}'
-               // withCredentials([string(credentialsId: 'docker', variable: 'dockervariable')]) {                   
-                        }
-                }     
 }
-
-    stage('Push Image to DockerHub') {
-      steps {
-        sh 'docker push chandruka/insureme:1.0'
-            }
-    } */
-    stage('Deploy Application using Ansible') {
-      steps {
-ansiblePlaybook become: true, credentialsId: 'sshid', installation: 'ansible', inventory: '/etc/ansible/hosts', playbook: 'deploy.yml', vaultTmpPath: ''            }
-    }
-
-  }
-}
-
