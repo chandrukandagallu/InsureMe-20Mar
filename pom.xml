@@ -41,8 +41,6 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
-
-        <!-- Add other dependencies your project needs here -->
     </dependencies>
 
     <build>
@@ -59,11 +57,11 @@
                 </configuration>
             </plugin>
 
-            <!-- WAR Plugin -->
+            <!-- WAR Plugin (Fixed Version) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.3</version>
+                <version>3.3.2</version> <!-- ✅ valid stable version -->
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
