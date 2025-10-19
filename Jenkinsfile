@@ -27,10 +27,7 @@ pipeline {
             steps {
                 echo "🚀 Deploying application to Tomcat..."
                 sh """
-                    # Copy WAR/JAR to Tomcat webapps directory
                     sudo cp target/insure-me-1.0.jar /opt/tomcat/webapps/
-                    
-                    # Restart Tomcat
                     sudo systemctl restart tomcat
                 """
             }
