@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Use Jenkins credentials IDs
         TOMCAT_USER = credentials('tomcat-creds')
         GITHUB_TOKEN = credentials('github-creds1')
     }
@@ -28,10 +27,10 @@ pipeline {
             steps {
                 echo "🚀 Deploying application to Tomcat..."
                 sh """
-                    # Copy JAR to Tomcat webapps or appropriate deployment directory
+                    # Copy WAR/JAR to Tomcat webapps directory
                     sudo cp target/insure-me-1.0.jar /opt/tomcat/webapps/
                     
-                    # Restart Tomcat server
+                    # Restart Tomcat
                     sudo systemctl restart tomcat
                 """
             }
