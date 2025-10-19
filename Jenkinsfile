@@ -1,65 +1,49 @@
-node{
-    
-    def mavenHome
-    def mavenCMD
-    def docker
-    def dockerCMD
-    def tagName
-    
-    stage('prepare enviroment'){
-        echo 'initialize all the variables'
-        mavenHome = tool name: 'maven' , type: 'maven'
-        mavenCMD = "${mavenHome}/bin/mvn"
-        docker = tool name: 'docker' , type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
-        dockerCMD = "${docker}/bin/docker"
-        tagName="3.0"
+pipeline {
+    agent any
+
+    environment {
+        // Use Jenkins credentials IDs
+        TOMCAT_USER = credentials('tomcat-creds')
+        GITHUB_TOKEN = credentials('github-creds1')
     }
-    
-    stage('git code checkout'){
-        try{
-            echo 'checkout the code from git repository'
-            git 'https://github.com/shubhamkushwah123/star-agile-insurance-project.git'
+
+    stages {
+        stage('Checkout Source') {
+            steps {
+                echo "📦 Checking out InsureMe source code..."
+                git branch: 'main',
+                    url: 'https://github.com/chandrukandagallu/InsureMe-20Mar.git',
+                    credentialsId: 'github-creds1'
+            }
         }
-        catch(Exception e){
-            echo 'Exception occured in Git Code Checkout Stage'
-            currentBuild.result = "FAILURE"
-            emailext body: '''Dear All,
-            The Jenkins job ${JOB_NAME} has been failed. Request you to please have a look at it immediately by clicking on the below link. 
-            ${BUILD_URL}''', subject: 'Job ${JOB_NAME} ${BUILD_NUMBER} is failed', to: 'shubham@gmail.com'
+
+        stage('Build with Maven') {
+            steps {
+                echo "🔧 Building the application with Maven..."
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Deploy to Tomcat (8081)') {
+            steps {
+                echo "🚀 Deploying application to Tomcat..."
+                sh """
+                    # Copy JAR to Tomcat webapps or appropriate deployment directory
+                    sudo cp target/insure-me-1.0.jar /opt/tomcat/webapps/
+                    
+                    # Restart Tomcat server
+                    sudo systemctl restart tomcat
+                """
+            }
         }
     }
-    
-    stage('Build the Application'){
-        echo "Cleaning... Compiling...Testing... Packaging..."
-        //sh 'mvn clean package'
-        sh "${mavenCMD} clean package"        
-    }
-    
-    stage('publish test reports'){
-        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: '/var/lib/jenkins/workspace/Capstone-Project-Live-Demo/target/surefire-reports', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: '', useWrapperFileDirectly: true])
-    }
-    
-    stage('Containerize the application'){
-        echo 'Creating Docker image'
-        sh "${dockerCMD} build -t shubhamkushwah123/insure-me:${tagName} ."
-    }
-    
-    stage('Pushing it ot the DockerHub'){
-        echo 'Pushing the docker image to DockerHub'
-        withCredentials([string(credentialsId: 'dock-password', variable: 'dockerHubPassword')]) {
-        sh "${dockerCMD} login -u shubhamkushwah123 -p ${dockerHubPassword}"
-        sh "${dockerCMD} push shubhamkushwah123/insure-me:${tagName}"
-            
+
+    post {
+        success {
+            echo "✅ Build and deployment successful!"
         }
-        
-    stage('Configure and Deploy to the test-server'){
-        ansiblePlaybook become: true, credentialsId: 'ansible-key', disableHostKeyChecking: true, installation: 'ansible', inventory: '/etc/ansible/hosts', playbook: 'ansible-playbook.yml'
-    }
-        
-        
+        failure {
+            echo "❌ Build or deployment failed! Check logs."
+        }
     }
 }
-
-
-
-
